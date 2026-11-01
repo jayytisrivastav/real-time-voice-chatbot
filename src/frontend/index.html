@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Local Voice Chatbot</title>
+</head>
+<body>
+  <h1>Local Voice Chatbot</h1>
+
+  <form id="chat-form">
+    <label for="question">Ask a question</label>
+    <input id="question" placeholder="What is machine learning?" required>
+    <button id="send" type="submit">Send</button>
+  </form>
+
+  <p id="answer" aria-live="polite"></p>
+
+  <script>
+    const form = document.querySelector("#chat-form");
+    const input = document.querySelector("#question");
+    const send = document.querySelector("#send");
+    const answer = document.querySelector("#answer");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const question = input.value.trim();
+      if (!question) return;
+
+      send.disabled = true;
+      answer.textContent = "Thinking…";
+
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({question: question})
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "Request failed.");
+        answer.textContent = data.answer;
+      } catch (error) {
+        answer.textContent = "Could not get a reply: " + error.message;
+      } finally {
+        send.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
